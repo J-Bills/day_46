@@ -70,30 +70,25 @@ if access_token:
     user_id = user.current_user().get('id')
     print(user_id)
     
-    
     track_collection_ids = list()
-    errors = list()
     for key, val in songs_and_artist.items():
         query_string = f"track:{key} artist:{val}"    
         response = user.search(q=query_string, limit=1, offset=0, type='track', market='ES')
         try:
-            track_collection_ids.append(response['tracks']['items'][0]['id'])
+            track_collection_ids.append(response['tracks']['items'][0]['uri'])
         except IndexError:
             pass
     
     first_half = track_collection_ids[:50]
     second_half = track_collection_ids[50:len(track_collection_ids)]
-    print(len(first_half), len(second_half))
     
-    first_track_set = user.tracks(first_half)
-    second_track_set = user.tracks(second_half)
+    playlist = user.user_playlist_create(user_id,f"{input_date} Billboard 100")
     
-    playlist_id = user.user_playlist_create(user_id,f"{input_date} Billboard 100")
-    
-    user.playlist_add_items(playlist_id,first_track_set)
+
+    user.playlist_add_items(playlist.get('id'),first_half)
     sleep(30)
-    user.playlist_add_items(playlist_id,second_track_set)
+    user.playlist_add_items(playlist.get('id'),second_half)
     
-    print(user.playlist_items())
+    print(user.playlist_items(playlist.get('id')))
 
 
